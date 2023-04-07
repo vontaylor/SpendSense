@@ -35,10 +35,9 @@ def readExpenseData(inputFile):
     if df.duplicated().any():
         raise ValueError("Duplicate rows found in the input data.")
 
-
     # total amount spent is reasonable and not weirdly high or low
     totalAmount = df['Amount'].sum()
-    if totalAmount < 0 or totalAmount > 1_000_000:  # set your own upper limit here
+    if totalAmount < 0 or totalAmount > 100000: 
         raise ValueError("Total amount spent is a weird number.")
 
     # convert the ExpenseDate column to datetime
