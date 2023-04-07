@@ -1,0 +1,23 @@
+EmployeeID,EmployeeName,ExpenseCategory,ExpenseDate,Amount,Description
+001,Han Solo,Travel,2023-04-01,100.00,Mileage reimbursement
+001,Han Solo,Meals,2023-04-01,25.00,Lunch with client
+002,Princess Leia,Office Supplies,2023-04-01,1500.00,Weekend trip
+002,Princess Leia,Travel,2023-04-02,150.00,Mileage reimbursement
+001,Han Solo,Meals,2023-04-02,3000.00,Dinner with client
+003,Luke Skywalker,Travel,2023-04-02,80.00,Mileage reimbursement
+005,Mandalorian,Meals,2023-04-07,7500.00,Company dinner party
+003,Luke Skywalker,Meals,2023-04-03,200.00,Lunch with client
+002,Princess Leia,Meals,2023-04-03,280.00,Dinner with client
+001,Han Solo,Advertising,2023-04-04,100.00,Newspaper ad
+001,Han Solo,Professional Development,2023-04-04,4000.00,PHD
+001,Han Solo,Utilities and Services,2023-04-04,100.00,Internet
+001,Han Solo,Travel,2023-04-04,60.00,Mileage reimbursement
+003,Luke Skywalker,Office Supplies,2023-04-04,50.00,Ink cartridges
+002,Princess Leia,Utilities and Services,2023-04-04,100.00,Internet
+004,Yoda,Meals,2023-04-05,500.00,Dinner with clients
+004,Yoda,Travel,2023-04-08,200.00,Breakfast with client
+005,Mandalorian,Travel,2023-04-08,250.00,Weekend trip
+005,Mandalorian,Meals,2023-04-08,100.00,Lunch
+
+
+
