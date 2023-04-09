@@ -8,8 +8,82 @@ import io
 import os
 import pandas as pd
 
+"""
+            Outline/report layout for the expense report:
 
-# Define the styles to be used in the report
+            Cover page:
+
+            [Report Title]
+            [Date Range of the Report]
+            [Company Name]
+            [Date]
+
+            Table of Contents:
+
+            [Summary]
+            [Expense Details]
+            [Charts and Graphs]
+
+            Summary:
+
+            [Executive Summary]
+
+            - [Total Amount Spent]
+            - [Total Number of Employees Included]
+            - [Top Expense Categories by Total Spend]
+            - [Trends in Expense Data]
+
+            Expense Details:
+
+            [Expense Category Breakdowns]
+
+            - [Travel]
+                - [Subtotal]
+            - [Meals]
+                - [Subtotal]
+            - [Office Supplies]
+                - [Subtotal]
+            - [Advertising]
+                - [Subtotal]
+            - [Professional Development]
+                - [Subtotal]
+            - [Utilities and Services]
+                - [Subtotal]
+
+            Charts and Graphs:
+
+            [Expense Data Visualization]
+
+            - [Pie chart showing top expense categories by total spend]
+            - [Bar chart showing expense data compared to total expense goal amount]
+
+            Formatting Considerations:
+
+            [Font Style]
+
+            - Title: Arial, 24pt, Bold
+            - Section Headers: Times New Roman, 16pt, Bold
+            - Subheaders: Times New Roman, 12pt, Bold
+            - Body Text: Times New Roman, 12pt
+
+            [Colors]
+
+            - Title: Dark Blue
+            - Section Headers: Dark Blue
+            - Subheaders: Dark Blue
+            - Body Text: Black
+
+            [Spacing]
+
+            - Single-spaced
+            - 1 inch margins on all sides
+
+            [Page Numbers]
+
+            - Bottom center of each page
+"""
+
+# defining the styles to be used in the report
 styles = getSampleStyleSheet()
 
 titleStyle = ParagraphStyle(
@@ -47,17 +121,15 @@ bodyStyle = ParagraphStyle(
     spaceAfter=inch/8
 )
 
-
-def generateReport(processedExpenseData): # q: what is the input to this function? 
+# function that takes the processed data as input
+def generateReport(processedExpenseData): 
     """
     Generate the expense report PDF.
     """
-    doc = SimpleDocTemplate(, pagesize=letter,
-                            rightMargin=72, leftMargin=72,
-                            topMargin=72, bottomMargin=18)
-
-    # Create the PDF object, using the buffer as its "file."
-    report = SimpleDocTemplate("expense_report.pdf", pagesize=letter, leftMargin=inch/2, rightMargin=inch/2, topMargin=inch/2, bottomMargin=inch/2)
+    # use reportlab library to create a new PDF document to hold the report
+    doc = SimpleDocTemplate("expense_report.pdf", pagesize=letter, 
+                               leftMargin=inch/2, rightMargin=inch/2, 
+                               topMargin=inch/2, bottomMargin=inch/2)
 
     # Get the data frames from the expense data dictionary
     totalByCategory = processedExpenseData['totalByCategory']
@@ -89,4 +161,58 @@ def generateReport(processedExpenseData): # q: what is the input to this functio
     story.append(Paragraph("[Insert Executive Summary Here]", bodyStyle))
     story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("<b>Total Amount Spent</b>: $%.2f" % totalExpenses, bodyStyle))
-   
+    story.append(Spacer(1, 0.25 * inch))
+    story.append(Paragraph("<b>Top 5 Expenses</b>", subheaderStyle))
+    story.append(Spacer(1, 0.25 * inch))
+
+    # Add the top 5 expenses to the PDF
+    top5Expenses = totalByCategory.head(5) # get the top 5 expenses
+    top5Expenses = top5Expenses[['ExpenseCategory', 'Amount', 'Percentage']] # get the columns we want
+    top5Expenses = top5Expenses.rename(columns={'ExpenseCategory': 'Category', 'Amount': 'Amount Spent', 'Percentage': 'Percentage of Total'}) # rename the columns
+    top5Expenses = top5Expenses.round({'Amount Spent': 2, 'Percentage of Total': 2}) # round the values
+    top5Expenses = top5Expenses.to_string(index=False) # convert the data frame to a string
+    story.append(Paragraph(top5Expenses, bodyStyle))
+    story.append(Spacer(1, 0.25 * inch))
+    story.append(Paragraph("<b>Total Number of Employees Included</b>: %d" % len(totalByEmployee), bodyStyle))
+    story.append(Spacer(1, 0.25 * inch))
+    story.append(Paragraph("<b>Top 5 Expense Categories by Total Spend</b>", subheaderStyle))
+    story.append(Spacer(1, 0.25 * inch))
+
+    # Add the top 5 expense categories to the PDF
+    top5Categories = totalByCategory.head(5) # get the top 5 expense categories
+    top5Categories = top5Categories[['ExpenseCategory', 'Amount', 'Percentage']] # get the columns we want
+    top5Categories = top5Categories.rename(columns={'ExpenseCategory': 'Category', 'Amount': 'Total Spent', 'Percentage': 'Percentage of Total'}) # rename the columns
+    top5Categories = top5Categories.round({'Total Spent': 2, 'Percentage of Total': 2}) # round the values
+    top5Categories = top5Categories.to_string(index=False) # convert the data frame to a string
+    story.append(Paragraph(top5Categories, bodyStyle))
+    story.append(Spacer(1, 0.25 * inch))
+    story.append(Paragraph("<b>Trends in Expense Data</b>", subheaderStyle))
+    story.append(Spacer(1, 0.25 * inch))
+
+    # Add the trends in expense data to the PDF
+    story.append(Paragraph("[Insert Trends in Expense Data Here]", bodyStyle))
+    story.append(PageBreak())		
+
+		# Add the expense details section to the PDF
+    story.append(Paragraph("Expense Details", sectionHeaderStyle))
+    story.append(Spacer(1, 0.25 * inch))
+
+    # Add the expense category breakdowns to the PDF
+    expenseCategories = totalByCategory['ExpenseCategory'].tolist() # get the list of expense expenseCategories
+    for expenseCategory in expenseCategories:
+        story.append(Paragraph("<b>%s</b>" % expenseCategory, subheaderStyle))
+        story.append(Spacer(1, 0.25 * inch))
+
+        # Get the data frame for the current expenseCategory
+        categoryData = processedExpenseData[expenseCategory]
+        categoryData = categoryData[['EmployeeName', 'Amount', 'Percentage']]
+        categoryData = categoryData.rename(columns={'EmployeeName': 'Employee', 'Amount': 'Amount Spent', 'Percentage': 'Percentage of Total'})
+        categoryData = categoryData.round({'Amount Spent': 2, 'Percentage of Total': 2})
+        categoryData = categoryData.to_string(index=False)
+
+        story.append(Paragraph(categoryData, bodyStyle))
+        story.append(Spacer(1, 0.25 * inch))
+        story.append(PageBreak())
+
+    # Add the charts and graphs section to the PDF
+    story.append(Paragraph("Charts and Graphs", sectionHeaderStyle))
