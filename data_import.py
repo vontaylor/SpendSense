@@ -1,8 +1,7 @@
 import pandas as pd
 import datetime
 
-# Define the input file path:
-inputFile = "testdata/sampleinput.csv"
+
 
 def readExpenseData(inputFile):
     '''
