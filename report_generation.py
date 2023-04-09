@@ -1,94 +1,23 @@
+from data_visualization import generateVisualizations
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Spacer, Table, TableStyle, Paragraph, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Spacer, Table, TableStyle, Paragraph, PageBreak, Image
 import io
 import os
 import pandas as pd
 
-"""
-            Outline/report layout for the expense report:
-
-            Cover page:
-
-            [Report Title]
-            [Date Range of the Report]
-            [Company Name]
-            [Date]
-
-            Table of Contents:
-
-            [Summary]
-            [Expense Details]
-            [Charts and Graphs]
-
-            Summary:
-
-            [Executive Summary]
-
-            - [Total Amount Spent]
-            - [Total Number of Employees Included]
-            - [Top Expense Categories by Total Spend]
-            - [Trends in Expense Data]
-
-            Expense Details:
-
-            [Expense Category Breakdowns]
-
-            - [Travel]
-                - [Subtotal]
-            - [Meals]
-                - [Subtotal]
-            - [Office Supplies]
-                - [Subtotal]
-            - [Advertising]
-                - [Subtotal]
-            - [Professional Development]
-                - [Subtotal]
-            - [Utilities and Services]
-                - [Subtotal]
-
-            Charts and Graphs:
-
-            [Expense Data Visualization]
-
-            - [Pie chart showing top expense categories by total spend]
-            - [Bar chart showing expense data compared to total expense goal amount]
-
-            Formatting Considerations:
-
-            [Font Style]
-
-            - Title: Arial, 24pt, Bold
-            - Section Headers: Times New Roman, 16pt, Bold
-            - Subheaders: Times New Roman, 12pt, Bold
-            - Body Text: Times New Roman, 12pt
-
-            [Colors]
-
-            - Title: Dark Blue
-            - Section Headers: Dark Blue
-            - Subheaders: Dark Blue
-            - Body Text: Black
-
-            [Spacing]
-
-            - Single-spaced
-            - 1 inch margins on all sides
-
-            [Page Numbers]
-
-            - Bottom center of each page
-"""
+# call the generateVisualizations function to generate the visualizations and get the processed data
+visualizations = generateVisualizations(processedExpenseData)
 
 # defining the styles to be used in the report
 styles = getSampleStyleSheet()
 
 titleStyle = ParagraphStyle(
     name="Title",
-    fontName="Arial",
+    fontName="Arial-Bold",
     fontSize=24,
     textColor=colors.HexColor(0x00008B),
     alignment=1,
@@ -127,7 +56,7 @@ def generateReport(processedExpenseData):
     Generate the expense report PDF.
     """
     # use reportlab library to create a new PDF document to hold the report
-    doc = SimpleDocTemplate("expense_report.pdf", pagesize=letter, 
+    doc = SimpleDocTemplate("expenseReport.pdf", pagesize=letter, 
                                leftMargin=inch/2, rightMargin=inch/2, 
                                topMargin=inch/2, bottomMargin=inch/2)
 
@@ -141,6 +70,8 @@ def generateReport(processedExpenseData):
 
     # Add the cover page to the PDF
     story.append(Paragraph("Expense Report", titleStyle))
+    story.append(Spacer(1, 0.5 * inch))
+    # story.append(Image("totalExpensesByCategoryPieChart.png", width=5*inch, height=5*inch))
     story.append(Spacer(1, 0.5 * inch))
     story.append(Paragraph("Date Range: [Insert Date Range Here]", styles["Normal"]))
     story.append(Paragraph("Company Name: [Insert Company Name Here]", styles["Normal"]))
@@ -193,7 +124,7 @@ def generateReport(processedExpenseData):
     story.append(Paragraph("[Insert Trends in Expense Data Here]", bodyStyle))
     story.append(PageBreak())		
 
-		# Add the expense details section to the PDF
+    # Add the expense details section to the PDF
     story.append(Paragraph("Expense Details", sectionHeaderStyle))
     story.append(Spacer(1, 0.25 * inch))
 
@@ -214,5 +145,19 @@ def generateReport(processedExpenseData):
         story.append(Spacer(1, 0.25 * inch))
         story.append(PageBreak())
 
-    # Add the charts and graphs section to the PDF
-    story.append(Paragraph("Charts and Graphs", sectionHeaderStyle))
+	# call the function to generate visualizations
+    generateVisualizations(processedExpenseData)
+
+    #add a SpendSense thank you image to the PDF
+    story.append(Image('SpendSense.png', width=2*inch, height=2*inch))
+
+    # save the PDF aka build the document
+    doc.build(story)
+
+    pdfFilePath = os.path.join(os.getcwd(), 'ExpenseReport.pdf')
+
+    return pdfFilePath
+
+
+
+
