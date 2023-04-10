@@ -23,16 +23,16 @@ def main():
 
         # process the expense data (df) to calculate various statistics and group the data by categories, employees, and months
         processedExpenseData = data_processing.processExpenseData(df)
-
+ 
         # generate the report with visualizations and save it to a PDF file
         pdfFile = report_generation.generateReport(processedExpenseData, df)
 
         # print the path to the PDF file
+
         print('Report generated at: ' + pdfFile)
 
     except Exception as e:
         print('An error occurred while generating the report: ' + str(e))
-
 
 if __name__ == "__main__":
     # Run the main function and test cases only when the script is executed as

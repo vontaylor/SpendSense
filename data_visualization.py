@@ -3,10 +3,6 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import pandas as pd
 
-
-
-
-
 def generateVisualizations(processedExpenseData):
     """
     Generate visualizations for the expense data and return a dictionary of

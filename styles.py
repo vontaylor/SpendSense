@@ -4,6 +4,7 @@ from reportlab.lib.units import inch
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 
 
+
 # defining the styles to be used in the report
 styles = getSampleStyleSheet()
 
@@ -19,7 +20,7 @@ titleStyle = ParagraphStyle(
 sectionHeaderStyle = ParagraphStyle(
     name="SectionHeader",
     fontName="Helvetica-Bold",
-    fontSize=20,
+    fontSize=30,
     textColor=colors.HexColor('#6D8E75'),
     spaceBefore=inch/2,
     spaceAfter=inch/4
@@ -28,7 +29,7 @@ sectionHeaderStyle = ParagraphStyle(
 subheaderStyle = ParagraphStyle(
     name="Subheader",
     fontName="Helvetica-Bold",
-    fontSize=14,
+    fontSize=20,
     textColor=colors.HexColor('#6D8E75'),
     spaceBefore=inch/4,
     spaceAfter=inch/8
@@ -42,3 +43,11 @@ bodyStyle = ParagraphStyle(
     spaceBefore=inch/8,
     spaceAfter=inch/8
 )
+
+# tableOfContentsHeaderStyle = ParagraphStyle(
+#     name='tableOfContentsHeader',
+#     parent=sectionHeaderStyle,
+#     fontSize=sectionHeaderStyle.fontSize * 1.5,  # You can adjust the multiplier to your preference
+# )
+
+tableOfContentsHeader = ParagraphStyle('Table of Contents Header', parent=sectionHeaderStyle, fontSize=sectionHeaderStyle.fontSize * 1.5, leading=24)

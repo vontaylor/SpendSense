@@ -2,10 +2,13 @@ import pandas as pd
 import datetime
 
 
-
 def readExpenseData(inputFile):
     '''
     read the input file, validate the data, and return a pandas data frame
+
+    :param inputFile: The path to the input file.
+    :return: A pandas data frame containing the expense data.
+    
     '''
     # define the column names
     columnNames = ['EmployeeID', 'EmployeeName', 'ExpenseCategory', 'ExpenseDate', 'Amount', 'Description']

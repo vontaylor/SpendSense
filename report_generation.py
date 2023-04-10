@@ -4,10 +4,12 @@ from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Spacer, Table, TableStyle, Paragraph, PageBreak, Image
+
+
 import io
 import os
 import pandas as pd
-from styles import titleStyle, sectionHeaderStyle, subheaderStyle, bodyStyle
+from styles import titleStyle, sectionHeaderStyle, subheaderStyle, bodyStyle, tableOfContentsHeader
 
 # function that takes my processed data as input
 def generateReport(processedExpenseData, df):
@@ -17,6 +19,11 @@ def generateReport(processedExpenseData, df):
         return "{:.2f}%".format(value)
     """
     Generate the expense report PDF.
+
+    :param processedExpenseData: A dictionary containing processed expense data.
+    :param df: The original DataFrame containing the expense data.
+    :return: The path to the generated PDF report.
+
     """
     # use reportlab library to create a new PDF document to hold the report
     doc = SimpleDocTemplate("expenseReport.pdf", pagesize=letter,
@@ -33,7 +40,7 @@ def generateReport(processedExpenseData, df):
     story = []
 
     # Add the cover page to the PDF
-    story.append(Paragraph("January", titleStyle))
+    story.append(Paragraph("April's", titleStyle))
     story.append(Spacer(1, 0.5 * inch))
     story.append(Paragraph("Expense", titleStyle))
     story.append(Spacer(1, 0.5 * inch))
@@ -44,8 +51,8 @@ def generateReport(processedExpenseData, df):
     story.append(Paragraph("Company Name: [Insert Company Name Here]", bodyStyle))
     story.append(PageBreak())
 
-    # Add the table of contents to the PDF
-    story.append(Paragraph("Table of Contents", sectionHeaderStyle))
+    # Add the table of contents to the PDF clickable links to each section
+    story.append(Paragraph("Table of Contents", tableOfContentsHeader))
     story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("<u>Summary</u>", subheaderStyle))
     story.append(Paragraph("<u>Expense Details</u>", subheaderStyle))
@@ -53,7 +60,7 @@ def generateReport(processedExpenseData, df):
     story.append(PageBreak())
 
     # Add the summary section to the PDF
-    story.append(Paragraph("Summary", sectionHeaderStyle))
+    story.append(Paragraph("Summary", titleStyle))
     story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("<b>Executive Summary</b>", subheaderStyle))
     story.append(Paragraph("[Insert Executive Summary Here]", bodyStyle))
@@ -61,7 +68,7 @@ def generateReport(processedExpenseData, df):
     story.append(Paragraph("<b>Total Amount Spent</b>: %s" % formatAmount(totalExpenses), bodyStyle))
 
     story.append(Spacer(1, 0.25 * inch))
-    story.append(Paragraph("<b>Top 5 Expenses</b>", subheaderStyle))
+    story.append(Paragraph("<b>Top 5 Expense Categories by Total Spend</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
 
 
@@ -75,33 +82,55 @@ def generateReport(processedExpenseData, df):
         {'Amount Spent': 2, 'Percentage of Total': 2})  # round the values
     top5Expenses['Amount Spent'] = top5Expenses['Amount Spent'].apply(formatAmount)
 
-    # convert the data frame to a string
-    top5Expenses = top5Expenses.to_string(index=False)
-    story.append(Paragraph(top5Expenses, bodyStyle))
+    # Add the top 5 expenses as a table
+    top5ExpensesData = [['Category', 'Amount Spent', 'Percentage of Total']] + top5Expenses.values.tolist()
+    top5ExpensesTable = Table(top5ExpensesData)
+    top5ExpensesTable.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1F1F1F')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#E7E6E6')),
+        ('GRID', (0, 0), (-1, -1), 1, colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        # ('LEFTPADDING', (0, 0), (-1, -1), 15),
+    ]))
+    story.append(top5ExpensesTable)
     story.append(Spacer(1, 0.25 * inch))
+
     story.append(Paragraph("<b>Total Number of Employees Included</b>: %d" %
                  len(totalByEmployee), bodyStyle))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(
-        Paragraph("<b>Top 5 Expense Categories by Total Spend</b>", subheaderStyle))
+
+    # Get the top 5 expense transactions
+    top5Transactions = df.nlargest(5, 'Amount')
+    # Select the columns we want
+    top5Transactions = top5Transactions[['ExpenseDate', 'EmployeeName', 'ExpenseCategory', 'Amount']]
+    # Add the top 5 expense transactions to the PDF
+    
+    story.append(Paragraph("<b>Top 5 Expense Transactions</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
 
-    # Add the top 5 expense categories to the PDF
-    top5Categories = totalByCategory.head(
-        5)  # get the top 5 expense categories
-    # get the columns we want
-    top5Categories = top5Categories[[
-        'ExpenseCategory', 'Amount', 'Percentage']]
-    top5Categories = top5Categories.rename(
-        columns={'ExpenseCategory': 'Category', 'Amount': 'Total Spent', 'Percentage': 'Percentage of Total'})  # rename the columns
-    top5Categories = top5Categories.round(
-        {'Total Spent': 2, 'Percentage of Total': 2})  # round the values
-    top5Categories['Total Spent'] = top5Categories['Total Spent'].apply(formatAmount)
+    top5Transactions = processedExpenseData['top5Transactions']
+    # top5Transactions['ExpenseDate'] = top5Transactions['ExpenseDate'].dt.strftime('%Y-%m-%d')  # Format the date
+    top5Transactions['Amount'] = top5Transactions['Amount'].apply(formatAmount)  # Format the amount
 
-    top5Categories = top5Categories.to_string(
-        index=False)  # convert the data frame to a string
-    story.append(Paragraph(top5Categories, bodyStyle))
+    top5TransactionsData = [['Emp#', 'Employee', 'Category', 'Date', 'Amount', 'Details' ]] + top5Transactions.values.tolist()
+    top5TransactionsTable = Table(top5TransactionsData)
+    top5TransactionsTable.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1F1F1F')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#E7E6E6')),
+        ('GRID', (0, 0), (-1, -1), 1, colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER')
+    ]))
+    story.append(top5TransactionsTable)
     story.append(Spacer(1, 0.25 * inch))
+    story.append(PageBreak())
+
+    # convert the data frame to a string
+    top5Expenses = top5Expenses.to_string(index=False)
+
     story.append(Paragraph("<b>Trends in Expense Data</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
 
@@ -110,50 +139,51 @@ def generateReport(processedExpenseData, df):
     story.append(PageBreak())
 
     # Add the expense details section to the PDF
-    story.append(Paragraph("Expense Details", sectionHeaderStyle))
+    story.append(Paragraph("Expense Details", titleStyle))
     story.append(Spacer(1, 0.25 * inch))
-
     # Add the expense category breakdowns to the PDF
     # get the list of expense expenseCategories
     expenseCategories = totalByCategory['ExpenseCategory'].tolist()
+
     for expenseCategory in expenseCategories:
         story.append(Paragraph("<b>%s</b>" % expenseCategory, subheaderStyle))
         story.append(Spacer(1, 0.25 * inch))
 
         # Get the data frame for the current expenseCategory
         categoryData = df[df['ExpenseCategory'] == expenseCategory].copy()
+        categoryData['Amount'] = categoryData['Amount'].apply(formatAmount) 
 
-        # Calculate the total expenses for the current category
-        totalCategoryExpenses = categoryData['Amount'].sum()
+        categoryData_data = [['Emp#', 'Employee', 'Category', 'Date', 'Amount', 'Details' ]] + categoryData.values.tolist()
+        categoryData_table = Table(categoryData_data)
+        categoryData_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1F1F1F')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#E7E6E6')),
+            ('GRID', (0, 0), (-1, -1), 1, colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.aliceblue, colors.lavender])
+        ]))
 
-        # Calculate the percentage of expenses for each employee in the current category and rounded
-        categoryData.loc[:, 'Percentage'] = (
-            categoryData['Amount'] / totalCategoryExpenses) * 100
+        story.append(categoryData_table)
+        # story.append(Spacer(1, 0.25 * inch))
+        
 
-        categoryData = categoryData[['EmployeeName', 'Amount', 'Percentage']]
-        categoryData = categoryData.rename(columns={
-            'EmployeeName': 'Employee', 'Amount': 'Amount Spent', 'Percentage': 'Percentage of Total'})
-        categoryData = categoryData.round(
-            {'Amount Spent': 2, 'Percentage of Total': 2})
-
-        # Apply formatting to categoryData
-        categoryData['Amount Spent'] = categoryData['Amount Spent'].apply(formatAmount)
-        categoryData['Percentage of Total'] = categoryData['Percentage of Total'].apply(formatPercentage)  # Add this line
-
-        categoryData = categoryData.to_string(index=False)
-        story.append(Paragraph(categoryData, bodyStyle))
-        story.append(Spacer(1, 0.25 * inch))
+        
     story.append(PageBreak())
-
     # call generateVisualizations function and add the charts and graphs to the PDF
     generateVisualizations(processedExpenseData)
-    story.append(Paragraph("Charts and Graphs", sectionHeaderStyle))
-    story.append(Spacer(1, 0.25 * inch))
+    story.append(Paragraph("Charts", titleStyle))
+    story.append(Spacer(1, 0.2 * inch))
+    story.append(Paragraph("& Graphs", titleStyle))
+    story.append(Spacer(1, 0.2 * inch))
     story.append(
         Paragraph("<b>Total Expenses by Category</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
     story.append(Image("expenseByCategoryPieChart.png",
-                 width=5*inch, height=5*inch))
+                 width=7*inch, height=7*inch))
     story.append(Spacer(1, 0.25 * inch))
     story.append(
         Paragraph("<b>Total Expenses by Employee</b>", subheaderStyle))

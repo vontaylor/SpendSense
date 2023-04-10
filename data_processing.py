@@ -3,6 +3,10 @@ import pandas as pd
 def processExpenseData(df):
     """
     Process the parsed expense data and return a dictionary of data frames.
+
+    :param df: The original DataFrame containing the expense data.
+    :return: A dictionary containing the processed data frames.
+
     """
     # Group expenses by category
     dfByCategory = df.groupby('ExpenseCategory')
@@ -27,6 +31,11 @@ def processExpenseData(df):
     # Sort expenses by descending order for each employee
     totalByEmployee = totalByEmployee.sort_values(by='Amount', ascending=False)
 
+    # Get the top 5 expense transactions
+    top5Transactions = df.nlargest(5, 'Amount')
+
+    
+
     df['ExpenseDate'] = pd.to_datetime(df['ExpenseDate'])
     # df['Month'] = df['ExpenseDate'].dt.to_period('M')
     # totalByMonth = df.groupby('Month')['Amount'].sum().reset_index()
@@ -41,6 +50,7 @@ def processExpenseData(df):
         'totalByCategory': totalByCategory,
         'totalByEmployee': totalByEmployee,
         'totalExpenses': totalExpenses,
+        'top5Transactions': top5Transactions,
         # 'totalByMonth': totalByMonth
     }
 
