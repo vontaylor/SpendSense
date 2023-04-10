@@ -3,81 +3,45 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Spacer, Table, TableStyle, Paragraph, PageBreak, Image
 import io
 import os
 import pandas as pd
+from styles import titleStyle, sectionHeaderStyle, subheaderStyle, bodyStyle
 
-
-# defining the styles to be used in the report
-styles = getSampleStyleSheet()
-
-titleStyle = ParagraphStyle(
-    name="Title",
-    fontName="Helvetica",
-    fontSize=24,
-    textColor=colors.HexColor(0x00008B),
-    alignment=1,
-    spaceAfter=inch/2
-)
-
-sectionHeaderStyle = ParagraphStyle(
-    name="SectionHeader",
-    fontName="Times-Bold",
-    fontSize=16,
-    textColor=colors.HexColor(0x00008B),
-    spaceBefore=inch/2,
-    spaceAfter=inch/4
-)
-
-subheaderStyle = ParagraphStyle(
-    name="Subheader",
-    fontName="Times-Bold",
-    fontSize=12,
-    textColor=colors.HexColor(0x00008B),
-    spaceBefore=inch/4,
-    spaceAfter=inch/8
-)
-
-bodyStyle = ParagraphStyle(
-    name="Body",
-    fontName="Times-Roman",
-    fontSize=12,
-    spaceBefore=inch/8,
-    spaceAfter=inch/8
-)
-
-# function that takes the processed data as input
-
-
+# function that takes my processed data as input
 def generateReport(processedExpenseData, df):
+    def formatAmount(amount):
+        return "${:,.2f}".format(amount)
+    def formatPercentage(value):
+        return "{:.2f}%".format(value)
     """
     Generate the expense report PDF.
     """
     # use reportlab library to create a new PDF document to hold the report
     doc = SimpleDocTemplate("expenseReport.pdf", pagesize=letter,
-                            leftMargin=inch/2, rightMargin=inch/2,
-                            topMargin=inch/2, bottomMargin=inch/2)
+                            leftMargin=inch, rightMargin=inch,
+                            topMargin=inch, bottomMargin=inch)
 
-    # Get the data frames from the expense data dictionary
+    # get the data frames from the expense data dictionary
     totalByCategory = processedExpenseData['totalByCategory']
     totalByEmployee = processedExpenseData['totalByEmployee']
     totalExpenses = processedExpenseData['totalExpenses']
     # totalByMonth = processedExpenseData['totalByMonth']
 
-    # Initialize the story list for the PDF
+    # initialize story list for PDF
     story = []
 
     # Add the cover page to the PDF
-    story.append(Paragraph("Expense Report", titleStyle))
+    story.append(Paragraph("January", titleStyle))
+    story.append(Spacer(1, 0.5 * inch))
+    story.append(Paragraph("Expense", titleStyle))
+    story.append(Spacer(1, 0.5 * inch))
+    story.append(Paragraph("Report", titleStyle))
     story.append(Spacer(1, 0.5 * inch))
     # story.append(Image("totalExpensesByCategoryPieChart.png", width=5*inch, height=5*inch))
     story.append(Spacer(1, 0.5 * inch))
-    story.append(
-        Paragraph("Date Range: [Insert Date Range Here]", styles["Normal"]))
-    story.append(
-        Paragraph("Company Name: [Insert Company Name Here]", styles["Normal"]))
+    story.append(Paragraph("Company Name: [Insert Company Name Here]", bodyStyle))
     story.append(PageBreak())
 
     # Add the table of contents to the PDF
@@ -94,11 +58,12 @@ def generateReport(processedExpenseData, df):
     story.append(Paragraph("<b>Executive Summary</b>", subheaderStyle))
     story.append(Paragraph("[Insert Executive Summary Here]", bodyStyle))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(Paragraph("<b>Total Amount Spent</b>: $%.2f" %
-                 totalExpenses, bodyStyle))
+    story.append(Paragraph("<b>Total Amount Spent</b>: %s" % formatAmount(totalExpenses), bodyStyle))
+
     story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("<b>Top 5 Expenses</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
+
 
     # Add the top 5 expenses to the PDF
     top5Expenses = totalByCategory.head(5)  # get the top 5 expenses
@@ -108,6 +73,8 @@ def generateReport(processedExpenseData, df):
                                        'ExpenseCategory': 'Category', 'Amount': 'Amount Spent', 'Percentage': 'Percentage of Total'})  # rename the columns
     top5Expenses = top5Expenses.round(
         {'Amount Spent': 2, 'Percentage of Total': 2})  # round the values
+    top5Expenses['Amount Spent'] = top5Expenses['Amount Spent'].apply(formatAmount)
+
     # convert the data frame to a string
     top5Expenses = top5Expenses.to_string(index=False)
     story.append(Paragraph(top5Expenses, bodyStyle))
@@ -129,6 +96,8 @@ def generateReport(processedExpenseData, df):
         columns={'ExpenseCategory': 'Category', 'Amount': 'Total Spent', 'Percentage': 'Percentage of Total'})  # rename the columns
     top5Categories = top5Categories.round(
         {'Total Spent': 2, 'Percentage of Total': 2})  # round the values
+    top5Categories['Total Spent'] = top5Categories['Total Spent'].apply(formatAmount)
+
     top5Categories = top5Categories.to_string(
         index=False)  # convert the data frame to a string
     story.append(Paragraph(top5Categories, bodyStyle))
@@ -152,21 +121,26 @@ def generateReport(processedExpenseData, df):
         story.append(Spacer(1, 0.25 * inch))
 
         # Get the data frame for the current expenseCategory
-        categoryData = df[df['ExpenseCategory'] == expenseCategory]
+        categoryData = df[df['ExpenseCategory'] == expenseCategory].copy()
 
         # Calculate the total expenses for the current category
         totalCategoryExpenses = categoryData['Amount'].sum()
 
         # Calculate the percentage of expenses for each employee in the current category and rounded
-        categoryData.loc[:, 'Percentage'] = (categoryData['Amount'] / totalCategoryExpenses) * 100
+        categoryData.loc[:, 'Percentage'] = (
+            categoryData['Amount'] / totalCategoryExpenses) * 100
 
         categoryData = categoryData[['EmployeeName', 'Amount', 'Percentage']]
         categoryData = categoryData.rename(columns={
             'EmployeeName': 'Employee', 'Amount': 'Amount Spent', 'Percentage': 'Percentage of Total'})
         categoryData = categoryData.round(
             {'Amount Spent': 2, 'Percentage of Total': 2})
-        categoryData = categoryData.to_string(index=False)
 
+        # Apply formatting to categoryData
+        categoryData['Amount Spent'] = categoryData['Amount Spent'].apply(formatAmount)
+        categoryData['Percentage of Total'] = categoryData['Percentage of Total'].apply(formatPercentage)  # Add this line
+
+        categoryData = categoryData.to_string(index=False)
         story.append(Paragraph(categoryData, bodyStyle))
         story.append(Spacer(1, 0.25 * inch))
     story.append(PageBreak())

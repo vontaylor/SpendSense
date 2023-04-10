@@ -1,9 +1,19 @@
-# SpendSense
+# SpendSense: Automated Expense Report Generator
 
-SpendSense aka ProfitPilot is an automated expense report generator that streamlines tracking and reporting of business expenses. Import receipts, categorize expenses, and generate reports in a few clicks. Designed for busy professionals to save time and reduce errors.
+Introducing SpendSense, your ultimate ProfitPilot, designed to simplify and streamline the process of tracking and reporting business expenses. Our user-friendly application allows you to import bank CSV files, automatically categorizes your expenses, and generates comprehensive reports with just a few clicks. SpendSense is tailored to make expense management more efficient, saving you both time and money.
+
+Key Features:
+
+    Import bank CSV files with ease
+    Automatic expense categorization using advanced algorithms
+    Generate detailed and visually appealing reports in PDF format
+    Simplified spending analysis for better financial decision-making
+    Save time and money by eliminating manual expense tracking
+    
+Embrace the future of expense management with SpendSense, and experience the difference in design and efficiency. Time is money; let SpendSense help you save both.
 
 """
-            Outline/report layout for the expense report:
+            report layout for the expense report:
 
             Cover page:
 

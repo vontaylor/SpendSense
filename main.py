@@ -3,6 +3,7 @@ import data_import
 import data_processing
 import data_visualization
 import report_generation
+from styles import titleStyle, sectionHeaderStyle, subheaderStyle, bodyStyle
 
 # accept the path to the CSV input file as a command-line argument within the testdata folder like this: python main.py sampleinput , knowing that the input file is in the testdata folder and the name of the file is sampleinput.csv
 # inputFile = 'testdata/' + sys.argv[1] + '.csv'
@@ -10,12 +11,13 @@ inputFile = 'testdata/sampleinput.csv'
 
 # now you can run the script from the command line like this: python main.py sampleinput
 
+
 def main():
     """
     The main function of the script, which coordinates the different components
     of the system: data import, data processing, visualization, and report generation.
     """
-    try:
+    try: 
         # read the input data from the CSV file
         df = data_import.readExpenseData(inputFile)
 

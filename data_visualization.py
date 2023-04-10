@@ -1,5 +1,11 @@
+import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import pandas as pd
+
+
+
+
 
 def generateVisualizations(processedExpenseData):
     """
@@ -8,6 +14,7 @@ def generateVisualizations(processedExpenseData):
     """
 
     # style the visualizations
+    colors = mcolors.TABLEAU_COLORS
     plt.style.use('ggplot')
 
     # dictionary to store the visualizations
@@ -17,9 +24,10 @@ def generateVisualizations(processedExpenseData):
     totalByCategory = processedExpenseData['totalByCategory']
     categoryLabels = totalByCategory['ExpenseCategory']
     categoryAmounts = totalByCategory['Amount']
-    plt.pie(categoryAmounts, labels=categoryLabels, autopct='%1.1f%%')
-    plt.title('Total Expenses by Category')
+    plt.pie(categoryAmounts, labels=categoryLabels, autopct='%1.1f%%', colors=colors.values(), textprops={'fontsize': 12})
+    plt.title('Total Expenses by Category', fontsize=16)
     plt.axis('equal')
+    plt.tight_layout(pad=1.5)
     plt.savefig('expenseByCategoryPieChart.png')
     plt.clf()
     visualizations['expenseByCategoryPieChart'] = 'expenseByCategoryPieChart.png'
@@ -28,6 +36,22 @@ def generateVisualizations(processedExpenseData):
     totalByEmployee = processedExpenseData['totalByEmployee']
     employeeLabels = totalByEmployee['EmployeeName']
     employeeAmounts = totalByEmployee['Amount']
+    fig, ax = plt.subplots()
+
+    bar_width = 0.6
+    bar_positions = np.arange(len(employeeLabels))
+
+    ax.bar(bar_positions, employeeAmounts, bar_width, color=colors.values())
+
+    ax.set_xlabel('Employee', fontsize=14)
+    ax.set_ylabel('Amount Spent', fontsize=14)
+    ax.set_title('Total Expenses by Employee', fontsize=16)
+    ax.set_xticks(bar_positions)
+    ax.set_xticklabels(employeeLabels, fontsize=12, rotation=45)
+
+    plt.tight_layout()
+    plt.savefig('expenseByEmployeeBarChart.png', bbox_inches='tight')
+    plt.clf()
     plt.bar(employeeLabels, employeeAmounts)
     plt.xlabel('Employee')
     plt.ylabel('Amount Spent')
