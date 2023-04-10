@@ -11,7 +11,7 @@ import os
 import pandas as pd
 from styles import titleStyle, sectionHeaderStyle, subheaderStyle, bodyStyle, tableOfContentsHeader
 
-# function that takes my processed data as input
+# function to generate report
 def generateReport(processedExpenseData, df):
     def formatAmount(amount):
         return "${:,.2f}".format(amount)
@@ -25,7 +25,7 @@ def generateReport(processedExpenseData, df):
     :return: The path to the generated PDF report.
 
     """
-    # use reportlab library to create a new PDF document to hold the report
+    # create a new PDF document to hold the report
     doc = SimpleDocTemplate("expenseReport.pdf", pagesize=letter,
                             leftMargin=inch, rightMargin=inch,
                             topMargin=inch, bottomMargin=inch)
@@ -34,24 +34,25 @@ def generateReport(processedExpenseData, df):
     totalByCategory = processedExpenseData['totalByCategory']
     totalByEmployee = processedExpenseData['totalByEmployee']
     totalExpenses = processedExpenseData['totalExpenses']
-    # totalByMonth = processedExpenseData['totalByMonth']
 
     # initialize story list for PDF
     story = []
 
-    # Add the cover page to the PDF
+    # add the cover page to the PDF
     story.append(Paragraph("April's", titleStyle))
     story.append(Spacer(1, 0.5 * inch))
     story.append(Paragraph("Expense", titleStyle))
     story.append(Spacer(1, 0.5 * inch))
     story.append(Paragraph("Report", titleStyle))
     story.append(Spacer(1, 0.5 * inch))
-    # story.append(Image("totalExpensesByCategoryPieChart.png", width=5*inch, height=5*inch))
     story.append(Spacer(1, 0.5 * inch))
-    story.append(Paragraph("Company Name: [Insert Company Name Here]", bodyStyle))
+    #TODO: hmmm i wonder for future feature to add company name and logo
+    # story.append(Paragraph("Company Name: ", bodyStyle)) 
+    # story.append(Image("totalExpensesByCategoryPieChart.png", width=5*inch, height=5*inch)) 
     story.append(PageBreak())
 
-    # Add the table of contents to the PDF clickable links to each section
+    # add the table of contents to PDF 
+    # TODO: clickable links to each section is also a future feature idea
     story.append(Paragraph("Table of Contents", tableOfContentsHeader))
     story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("<u>Summary</u>", subheaderStyle))
@@ -59,30 +60,28 @@ def generateReport(processedExpenseData, df):
     story.append(Paragraph("<u>Charts and Graphs</u>", subheaderStyle))
     story.append(PageBreak())
 
-    # Add the summary section to the PDF
+    # add the summary section 
     story.append(Paragraph("Summary", titleStyle))
     story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("<b>Executive Summary</b>", subheaderStyle))
     story.append(Paragraph("[Insert Executive Summary Here]", bodyStyle))
     story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("<b>Total Amount Spent</b>: %s" % formatAmount(totalExpenses), bodyStyle))
-
     story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("<b>Top 5 Expense Categories by Total Spend</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
 
-
-    # Add the top 5 expenses to the PDF
-    top5Expenses = totalByCategory.head(5)  # get the top 5 expenses
-    # get the columns we want
+    # add the top 5 expenses to the PDF
+    # get the top 5 expenses, the columns i'll want, rename those columns, round the values, and format the amount
+    top5Expenses = totalByCategory.head(5)
     top5Expenses = top5Expenses[['ExpenseCategory', 'Amount', 'Percentage']]
     top5Expenses = top5Expenses.rename(columns={
-                                       'ExpenseCategory': 'Category', 'Amount': 'Amount Spent', 'Percentage': 'Percentage of Total'})  # rename the columns
+                                       'ExpenseCategory': 'Category', 'Amount': 'Amount Spent', 'Percentage': 'Percentage of Total'}) 
     top5Expenses = top5Expenses.round(
-        {'Amount Spent': 2, 'Percentage of Total': 2})  # round the values
+        {'Amount Spent': 2, 'Percentage of Total': 2}) 
     top5Expenses['Amount Spent'] = top5Expenses['Amount Spent'].apply(formatAmount)
 
-    # Add the top 5 expenses as a table
+    # add the top 5 expenses as a table
     top5ExpensesData = [['Category', 'Amount Spent', 'Percentage of Total']] + top5Expenses.values.tolist()
     top5ExpensesTable = Table(top5ExpensesData)
     top5ExpensesTable.setStyle(TableStyle([
@@ -91,29 +90,26 @@ def generateReport(processedExpenseData, df):
         ('GRID', (0, 0), (-1, -1), 1, colors.white),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 12),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        # ('LEFTPADDING', (0, 0), (-1, -1), 15),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER')
     ]))
     story.append(top5ExpensesTable)
     story.append(Spacer(1, 0.25 * inch))
 
+    # add the total number of employees included in the report
     story.append(Paragraph("<b>Total Number of Employees Included</b>: %d" %
                  len(totalByEmployee), bodyStyle))
     story.append(Spacer(1, 0.25 * inch))
 
-    # Get the top 5 expense transactions
-    top5Transactions = df.nlargest(5, 'Amount')
-    # Select the columns we want
-    top5Transactions = top5Transactions[['ExpenseDate', 'EmployeeName', 'ExpenseCategory', 'Amount']]
-    # Add the top 5 expense transactions to the PDF
-    
+    # add the top 5 transactions
     story.append(Paragraph("<b>Top 5 Expense Transactions</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
-
+    # get the top 5 transactions, the columns I want, rename those columns, and format the amount
+    top5Transactions = df.nlargest(5, 'Amount')
+    top5Transactions = top5Transactions[['ExpenseDate', 'EmployeeName', 'ExpenseCategory', 'Amount']]
     top5Transactions = processedExpenseData['top5Transactions']
-    # top5Transactions['ExpenseDate'] = top5Transactions['ExpenseDate'].dt.strftime('%Y-%m-%d')  # Format the date
-    top5Transactions['Amount'] = top5Transactions['Amount'].apply(formatAmount)  # Format the amount
+    top5Transactions['Amount'] = top5Transactions['Amount'].apply(formatAmount)
 
+    # add the top 5 transactions as a table
     top5TransactionsData = [['Emp#', 'Employee', 'Category', 'Date', 'Amount', 'Details' ]] + top5Transactions.values.tolist()
     top5TransactionsTable = Table(top5TransactionsData)
     top5TransactionsTable.setStyle(TableStyle([
@@ -128,34 +124,29 @@ def generateReport(processedExpenseData, df):
     story.append(Spacer(1, 0.25 * inch))
     story.append(PageBreak())
 
-    # convert the data frame to a string
-    top5Expenses = top5Expenses.to_string(index=False)
+    # TODO: feature i can add, example can be if the meal expense is over a certain amount, then it will be flagged and reported within the trends section
+    # # add the trends in expense section
+    # story.append(Paragraph("<b>Trends in Expense Data</b>", subheaderStyle))
+    # story.append(Spacer(1, 0.25 * inch))
+        # TODO trend calculations can be added to the data processing section and then added to the story here   
+    # story.append(PageBreak())
 
-    story.append(Paragraph("<b>Trends in Expense Data</b>", subheaderStyle))
-    story.append(Spacer(1, 0.25 * inch))
-
-    # Add the trends in expense data to the PDF
-    story.append(Paragraph("[Insert Trends in Expense Data Here]", bodyStyle))
-    story.append(PageBreak())
-
-    # Add the expense details section to the PDF
+    # add the expense details section
     story.append(Paragraph("Expense Details", titleStyle))
     story.append(Spacer(1, 0.25 * inch))
-    # Add the expense category breakdowns to the PDF
-    # get the list of expense expenseCategories
+    # add the expense category breakdowns
     expenseCategories = totalByCategory['ExpenseCategory'].tolist()
-
     for expenseCategory in expenseCategories:
         story.append(Paragraph("<b>%s</b>" % expenseCategory, subheaderStyle))
         story.append(Spacer(1, 0.25 * inch))
 
-        # Get the data frame for the current expenseCategory
-        categoryData = df[df['ExpenseCategory'] == expenseCategory].copy()
+        # get the data frame for the current expenseCategory
+        categoryData = df[df['ExpenseCategory'] == expenseCategory].copy() # Mr. Brown, this piece of code was causing me a lot of trouble. ultimately, it was causing the data to be modified in the original data frame so I had to copy it
         categoryData['Amount'] = categoryData['Amount'].apply(formatAmount) 
-
-        categoryData_data = [['Emp#', 'Employee', 'Category', 'Date', 'Amount', 'Details' ]] + categoryData.values.tolist()
-        categoryData_table = Table(categoryData_data)
-        categoryData_table.setStyle(TableStyle([
+        # add the expense category data as a table
+        categoryDataData = [['Emp#', 'Employee', 'Category', 'Date', 'Amount', 'Details' ]] + categoryData.values.tolist()
+        categoryDataTable = Table(categoryDataData)
+        categoryDataTable.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1F1F1F')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#E7E6E6')),
             ('GRID', (0, 0), (-1, -1), 1, colors.white),
@@ -166,44 +157,39 @@ def generateReport(processedExpenseData, df):
             ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.aliceblue, colors.lavender])
         ]))
-
-        story.append(categoryData_table)
-        # story.append(Spacer(1, 0.25 * inch))
-        
-
-        
+        story.append(categoryDataTable)        
     story.append(PageBreak())
-    # call generateVisualizations function and add the charts and graphs to the PDF
-    generateVisualizations(processedExpenseData)
+
+    # add the charts and graphs
+    # first, generate the visualizations using the function i made from 'data_visualization' module
+    generateVisualizations(processedExpenseData) 
+
+    # add the titles
     story.append(Paragraph("Charts", titleStyle))
     story.append(Spacer(1, 0.2 * inch))
     story.append(Paragraph("& Graphs", titleStyle))
     story.append(Spacer(1, 0.2 * inch))
-    story.append(
-        Paragraph("<b>Total Expenses by Category</b>", subheaderStyle))
+
+    # add title and pie chart
+    story.append(Paragraph("<b>Total Expenses by Category</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(Image("expenseByCategoryPieChart.png",
-                 width=7*inch, height=7*inch))
+    story.append(Image("expenseByCategoryPieChart.png", width=7*inch, height=7*inch))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(
-        Paragraph("<b>Total Expenses by Employee</b>", subheaderStyle))
+
+    # add title and bar chart
+    story.append(Paragraph("<b>Total Expenses by Employee</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(Image("expenseByEmployeeBarChart.png",
-                 width=5*inch, height=5*inch))
+    story.append(Image("expenseByEmployeeBarChart.png", width=5*inch, height=5*inch))
     story.append(Spacer(1, 0.25 * inch))
-    # story.append(Paragraph("<b>Total Expenses by Month</b>", subheaderStyle))
-    # story.append(Spacer(1, 0.25 * inch))
-    # story.append(Image("totalExpensesByMonthBarChart.png",
-    #              width=5*inch, height=5*inch))
-    # story.append(Spacer(1, 0.25 * inch))
     story.append(PageBreak())
 
+    #TODO: add a SpendSense thank you image to the PDF
     # add a SpendSense thank you image to the PDF
     # story.append(Image('SpendSense.png', width=2*inch, height=2*inch))
 
-    # save the PDF aka build the document
+    # save the PDF, aka build the document
     doc.build(story)
 
+    # set the path to the generated PDF report and return it
     pdfFilePath = "ExpenseReport.pdf"
-
     return pdfFilePath

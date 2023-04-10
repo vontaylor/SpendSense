@@ -16,6 +16,7 @@ def main():
     """
     The main function of the script, which coordinates the different components
     of the system: data import, data processing, visualization, and report generation.
+    
     """
     try: 
         # read the input data from the CSV file
