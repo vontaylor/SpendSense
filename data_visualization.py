@@ -37,17 +37,17 @@ def generateVisualizations(processedExpenseData):
     plt.clf()
     visualizations['expenseByEmployeeBarChart'] = 'expenseByEmployeeBarChart.png'
 
-    # Bar chart for total expenses by month
-    totalByMonth = processedExpenseData['totalByMonth']
-    monthLabels = totalByMonth['Month']
-    monthAmounts = totalByMonth['Amount']
-    plt.bar(monthLabels, monthAmounts)
-    plt.xlabel('Month')
-    plt.ylabel('Amount Spent')
-    plt.title('Total Expenses by Month')
-    plt.xticks(rotation=45)
-    plt.savefig('expenseByMonthBarChart.png', bbox_inches='tight')
-    plt.clf()
-    visualizations['expenseByMonthBarChart'] = 'expenseByMonthBarChart.png'
+    # # Bar chart for total expenses by month
+    # totalByMonth = processedExpenseData['totalByMonth']
+    # monthLabels = totalByMonth['Month']
+    # monthAmounts = totalByMonth['Amount']
+    # plt.bar(monthLabels, monthAmounts)
+    # plt.xlabel('Month')
+    # plt.ylabel('Amount Spent')
+    # plt.title('Total Expenses by Month')
+    # plt.xticks(rotation=45)
+    # plt.savefig('expenseByMonthBarChart.png', bbox_inches='tight')
+    # plt.clf()
+    # visualizations['expenseByMonthBarChart'] = 'expenseByMonthBarChart.png'
 
     return visualizations

@@ -1,0 +1,7 @@
+{
+    "name": "Python: Run main.py with CSV Argument",
+    "type": "python",
+    "request": "launch",
+    "program": "${workspaceFolder}/main.py",
+    "args": ["simpleinput"]
+}

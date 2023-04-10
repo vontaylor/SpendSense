@@ -5,7 +5,8 @@ import data_visualization
 import report_generation
 
 # accept the path to the CSV input file as a command-line argument within the testdata folder like this: python main.py sampleinput , knowing that the input file is in the testdata folder and the name of the file is sampleinput.csv
-inputFile = 'testdata/' + sys.argv[1] + '.csv'
+# inputFile = 'testdata/' + sys.argv[1] + '.csv'
+inputFile = 'testdata/sampleinput.csv'
 
 # now you can run the script from the command line like this: python main.py sampleinput
 

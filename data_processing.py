@@ -27,23 +27,21 @@ def processExpenseData(df):
     # Sort expenses by descending order for each employee
     totalByEmployee = totalByEmployee.sort_values(by='Amount', ascending=False)
 
-    # group expenses by month
-    dfByMonth = df.groupby('Month')
-    # sort expenses by descending order for each month
-    totalByMonth = totalByMonth.sort_values(by='Amount', ascending=False)
+    df['ExpenseDate'] = pd.to_datetime(df['ExpenseDate'])
+    # df['Month'] = df['ExpenseDate'].dt.to_period('M')
+    # totalByMonth = df.groupby('Month')['Amount'].sum().reset_index()
+    # # sort expenses by descending order for each month
+    # totalByMonth = totalByMonth.sort_values(by='Amount', ascending=False)
 
-    # calculate total expenses by month
-    totalByMonth = dfByMonth['Amount'].sum().reset_index()
+    # # calculate the percentage of expenses for each month
+    # totalByMonth['Percentage'] = (totalByMonth['Amount'] / totalExpenses) * 100
 
-    # calculate the percentage of expenses for each month
-    totalByMonth['Percentage'] = (totalByMonth['Amount'] / totalExpenses) * 100
-    
     # return the processed data
     processedExpenseData = {
         'totalByCategory': totalByCategory,
         'totalByEmployee': totalByEmployee,
         'totalExpenses': totalExpenses,
-        'totalByMonth': totalByMonth
+        # 'totalByMonth': totalByMonth
     }
 
     return processedExpenseData

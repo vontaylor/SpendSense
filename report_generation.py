@@ -64,6 +64,7 @@ def generateReport(processedExpenseData, df):
     totalByCategory = processedExpenseData['totalByCategory']
     totalByEmployee = processedExpenseData['totalByEmployee']
     totalExpenses = processedExpenseData['totalExpenses']
+    # totalByMonth = processedExpenseData['totalByMonth']
 
     # Initialize the story list for the PDF
     story = []
@@ -130,7 +131,6 @@ def generateReport(processedExpenseData, df):
         {'Total Spent': 2, 'Percentage of Total': 2})  # round the values
     top5Categories = top5Categories.to_string(
         index=False)  # convert the data frame to a string
-
     story.append(Paragraph(top5Categories, bodyStyle))
     story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("<b>Trends in Expense Data</b>", subheaderStyle))
@@ -153,50 +153,49 @@ def generateReport(processedExpenseData, df):
 
         # Get the data frame for the current expenseCategory
         categoryData = df[df['ExpenseCategory'] == expenseCategory]
+
+        # Calculate the total expenses for the current category
+        totalCategoryExpenses = categoryData['Amount'].sum()
+
+        # Calculate the percentage of expenses for each employee in the current category and rounded
+        categoryData.loc[:, 'Percentage'] = (categoryData['Amount'] / totalCategoryExpenses) * 100
+
         categoryData = categoryData[['EmployeeName', 'Amount', 'Percentage']]
         categoryData = categoryData.rename(columns={
-                                           'EmployeeName': 'Employee', 'Amount': 'Amount Spent', 'Percentage': 'Percentage of Total'})
+            'EmployeeName': 'Employee', 'Amount': 'Amount Spent', 'Percentage': 'Percentage of Total'})
         categoryData = categoryData.round(
             {'Amount Spent': 2, 'Percentage of Total': 2})
         categoryData = categoryData.to_string(index=False)
 
         story.append(Paragraph(categoryData, bodyStyle))
         story.append(Spacer(1, 0.25 * inch))
-        story.append(PageBreak())
+    story.append(PageBreak())
 
     # call generateVisualizations function and add the charts and graphs to the PDF
     generateVisualizations(processedExpenseData)
     story.append(Paragraph("Charts and Graphs", sectionHeaderStyle))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(Paragraph("<b>Total Expenses by Category</b>", subheaderStyle))
+    story.append(
+        Paragraph("<b>Total Expenses by Category</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(Image("totalExpensesByCategoryPieChart.png",
+    story.append(Image("expenseByCategoryPieChart.png",
                  width=5*inch, height=5*inch))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(Paragraph("<b>Total Expenses by Employee</b>", subheaderStyle))
+    story.append(
+        Paragraph("<b>Total Expenses by Employee</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(Image("totalExpensesByEmployeePieChart.png",
+    story.append(Image("expenseByEmployeeBarChart.png",
                  width=5*inch, height=5*inch))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(Paragraph("<b>Total Expenses by Month</b>", subheaderStyle))
-    story.append(Spacer(1, 0.25 * inch))
-    story.append(Image("totalExpensesByMonthBarChart.png",
-                 width=5*inch, height=5*inch))
-    story.append(Spacer(1, 0.25 * inch))
-    story.append(Paragraph("<b>Total Expenses by Day of the Week</b>", subheaderStyle))
-    story.append(Spacer(1, 0.25 * inch))
-    story.append(Image("totalExpensesByDayOfWeekBarChart.png",
-                 width=5*inch, height=5*inch))
-    story.append(Spacer(1, 0.25 * inch))
-    story.append(Paragraph("<b>Total Expenses by Hour of the Day</b>", subheaderStyle))
-    story.append(Spacer(1, 0.25 * inch))
-    story.append(Image("totalExpensesByHourOfDayBarChart.png",
-                 width=5*inch, height=5*inch))
-    story.append(Spacer(1, 0.25 * inch))
+    # story.append(Paragraph("<b>Total Expenses by Month</b>", subheaderStyle))
+    # story.append(Spacer(1, 0.25 * inch))
+    # story.append(Image("totalExpensesByMonthBarChart.png",
+    #              width=5*inch, height=5*inch))
+    # story.append(Spacer(1, 0.25 * inch))
     story.append(PageBreak())
-    
+
     # add a SpendSense thank you image to the PDF
-    story.append(Image('SpendSense.png', width=2*inch, height=2*inch))
+    # story.append(Image('SpendSense.png', width=2*inch, height=2*inch))
 
     # save the PDF aka build the document
     doc.build(story)
