@@ -4,8 +4,10 @@ import data_processing
 import data_visualization
 import report_generation
 
-# constant of input file path:
-inputFile = "testdata/sampleinput.csv"
+# accept the path to the CSV input file as a command-line argument within the testdata folder like this: python main.py sampleinput , knowing that the input file is in the testdata folder and the name of the file is sampleinput.csv
+inputFile = 'testdata/' + sys.argv[1] + '.csv'
+
+# now you can run the script from the command line like this: python main.py sampleinput
 
 def main():
     """
@@ -20,7 +22,7 @@ def main():
         processedExpenseData = data_processing.processExpenseData(df)
 
         # generate the report with visualizations and save it to a PDF file
-        pdfFile = report_generation.generateReport(processedExpenseData)
+        pdfFile = report_generation.generateReport(processedExpenseData, df)
 
         # print the path to the PDF file
         print('Report generated at: ' + pdfFile)
@@ -29,3 +31,7 @@ def main():
         print('An error occurred while generating the report: ' + str(e))
 
 
+if __name__ == "__main__":
+    # Run the main function and test cases only when the script is executed as
+    # the main module
+    main()

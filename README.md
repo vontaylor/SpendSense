@@ -51,6 +51,7 @@ SpendSense aka ProfitPilot is an automated expense report generator that streaml
 
             - [Pie chart showing top expense categories by total spend]
             - [Bar chart showing expense data compared to total expense goal amount]
+            - [Bar chart for total expenses by month]
 
             Formatting Considerations:
 

@@ -42,6 +42,9 @@ def readExpenseData(inputFile):
     # convert the ExpenseDate column to datetime
     df['ExpenseDate'] = pd.to_datetime(df['ExpenseDate'])
 
+    # Extract the month from the 'ExpenseDate' column and create a 'Month' column
+    df['Month'] = df['ExpenseDate'].dt.month
+
     # return the data frame
     return df
 
