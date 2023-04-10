@@ -35,8 +35,9 @@ def processExpenseData(df):
     top5Transactions = df.nlargest(5, 'Amount')
 
     
-
+    # convert the ExpenseDate column to datetime
     df['ExpenseDate'] = pd.to_datetime(df['ExpenseDate'])
+
     # df['Month'] = df['ExpenseDate'].dt.to_period('M')
     # totalByMonth = df.groupby('Month')['Amount'].sum().reset_index()
     # # sort expenses by descending order for each month

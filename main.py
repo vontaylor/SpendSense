@@ -16,7 +16,7 @@ def main():
     """
     The main function of the script, which coordinates the different components
     of the system: data import, data processing, visualization, and report generation.
-    
+
     """
     try: 
         # read the input data from the CSV file
@@ -24,7 +24,7 @@ def main():
 
         # process the expense data (df) to calculate various statistics and group the data by categories, employees, and months
         processedExpenseData = data_processing.processExpenseData(df)
- 
+  
         # generate the report with visualizations and save it to a PDF file
         pdfFile = report_generation.generateReport(processedExpenseData, df)
 

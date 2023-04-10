@@ -1,15 +1,16 @@
-from data_visualization import generateVisualizations
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
-from reportlab.pdfgen import canvas
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Spacer, Table, TableStyle, Paragraph, PageBreak, Image
+from data_visualization import generateVisualizations # used to generate charts and graphs visuals
+from reportlab.lib.pagesizes import letter # used to set the page size of the report
+from reportlab.lib.units import inch # used to set the margins of the report
+from reportlab.pdfgen import canvas # used to create PDF canvas
+from reportlab.lib import colors # used to set the colors for tables and text
+# used to create the document template, spacing, tables, table styles, paragraphs, page breaks, and images.
+from reportlab.platypus import SimpleDocTemplate, Spacer, Table, TableStyle, Paragraph, PageBreak, Image 
 
-
-import io
-import os
-import pandas as pd
-from styles import titleStyle, sectionHeaderStyle, subheaderStyle, bodyStyle, tableOfContentsHeader
+import io # used for file handling
+import os # used for interacting with my operating system
+import pandas as pd # used for data manipulation
+# used to import the styles from the styles.py file
+from styles import titleStyle, sectionHeaderStyle, subheaderStyle, bodyStyle, tableOfContentsHeader 
 
 # function to generate report
 def generateReport(processedExpenseData, df):
@@ -39,13 +40,13 @@ def generateReport(processedExpenseData, df):
     story = []
 
     # add the cover page to the PDF
+    story.append(Spacer(1, 3 * inch))
     story.append(Paragraph("April's", titleStyle))
-    story.append(Spacer(1, 0.5 * inch))
+    story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("Expense", titleStyle))
-    story.append(Spacer(1, 0.5 * inch))
+    story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("Report", titleStyle))
-    story.append(Spacer(1, 0.5 * inch))
-    story.append(Spacer(1, 0.5 * inch))
+    story.append(Spacer(1, 0.25 * inch))
     #TODO: hmmm i wonder for future feature to add company name and logo
     # story.append(Paragraph("Company Name: ", bodyStyle)) 
     # story.append(Image("totalExpensesByCategoryPieChart.png", width=5*inch, height=5*inch)) 
@@ -53,6 +54,7 @@ def generateReport(processedExpenseData, df):
 
     # add the table of contents to PDF 
     # TODO: clickable links to each section is also a future feature idea
+    story.append(Spacer(1, 3.25 * inch))
     story.append(Paragraph("Table of Contents", tableOfContentsHeader))
     story.append(Spacer(1, 0.25 * inch))
     story.append(Paragraph("<u>Summary</u>", subheaderStyle))
@@ -165,21 +167,24 @@ def generateReport(processedExpenseData, df):
     generateVisualizations(processedExpenseData) 
 
     # add the titles
+    story.append(Spacer(1, 3 * inch))
     story.append(Paragraph("Charts", titleStyle))
     story.append(Spacer(1, 0.2 * inch))
     story.append(Paragraph("& Graphs", titleStyle))
     story.append(Spacer(1, 0.2 * inch))
+    story.append(PageBreak())
 
     # add title and pie chart
     story.append(Paragraph("<b>Total Expenses by Category</b>", subheaderStyle))
-    story.append(Spacer(1, 0.25 * inch))
+    story.append(Spacer(1, 0.15 * inch))
     story.append(Image("expenseByCategoryPieChart.png", width=7*inch, height=7*inch))
     story.append(Spacer(1, 0.25 * inch))
+    story.append(PageBreak())
 
     # add title and bar chart
     story.append(Paragraph("<b>Total Expenses by Employee</b>", subheaderStyle))
     story.append(Spacer(1, 0.25 * inch))
-    story.append(Image("expenseByEmployeeBarChart.png", width=5*inch, height=5*inch))
+    story.append(Image("expenseByEmployeeBarChart.png", width=5*inch, height=8*inch))
     story.append(Spacer(1, 0.25 * inch))
     story.append(PageBreak())
 
